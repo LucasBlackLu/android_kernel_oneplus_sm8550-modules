@@ -263,7 +263,7 @@ int oplus_ofp_init(void *dsi_panel)
 			p_oplus_ofp_params->need_to_update_lhbm_pressed_icon_gamma = utils->read_bool(utils->data, "oplus,ofp-need-to-update-lhbm-pressed-icon-gamma");
 			OFP_INFO("need_to_update_lhbm_pressed_icon_gamma:%d\n", p_oplus_ofp_params->need_to_update_lhbm_pressed_icon_gamma);
 
-						/* indicates which line the dbv alpha register is in the cmd set */
+			/* indicates which line the dbv alpha register is in the cmd set */
 			rc = utils->read_u32(utils->data, "oplus,ofp-lhbm-dbv-alpha-cmd-index", &value);
 			if (rc) {
 				OFP_ERR("failed to read oplus,ofp-lhbm-dbv-alpha-cmd-index, rc=%d\n", rc);

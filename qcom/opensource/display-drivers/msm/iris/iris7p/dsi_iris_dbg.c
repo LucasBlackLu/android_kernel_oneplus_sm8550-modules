@@ -29,6 +29,8 @@ int iris_debug_display_mode_get_i7p(char *kbuf, int size, bool debug)
 			
 	len += iris_get_sr_info(kbuf + len, size - len, 1);
 
+	len += iris_get_sr_info(kbuf + len, size - len, 1);
+
 	len += snprintf(kbuf + len, size - len,
 			"%-20s:\t%d\n", "Memc mode", pcfg->memc_info.memc_mode);
 

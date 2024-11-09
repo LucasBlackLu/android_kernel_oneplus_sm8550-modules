@@ -298,7 +298,6 @@ void oplus_panel_update_backlight(struct dsi_panel *panel,
 			LCD_INFO("lhbm on state, cancel delay 51 to next frame operation\n");
 		} else {
 			oplus_sde_early_wakeup(panel);
-			oplus_wait_for_vsync(panel);
 			/* use pwm_sw_cmd_te_cnt to caculate interval from pwm_cmd then delay to next 2 frames of pwm_sw cmd */
 			need_delay_te_cnt = panel->oplus_priv.pwm_sw_cmd_te_cnt;
 			for (i = 0; i < need_delay_te_cnt; i++) {

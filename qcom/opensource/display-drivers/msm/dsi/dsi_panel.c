@@ -1190,14 +1190,14 @@ static int dsi_panel_parse_pixel_format(struct dsi_host_common_cfg *host,
 		break;
 	case 30:
 		/*
-		* The destination pixel format (host->dst_format) depends
-		* upon the compression, and should be RGB888 if the DSC is
-		* enable.
-		* The DSC status information is inside the timing modes, that
-		* is parsed during first dsi_display_get_modes() call.
-		* The dst_format will be updated there depending upon the
-		* DSC status.
-		*/
+		 * The destination pixel format (host->dst_format) depends
+		 * upon the compression, and should be RGB888 if the DSC is
+		 * enable.
+		 * The DSC status information is inside the timing modes, that
+		 * is parsed during first dsi_display_get_modes() call.
+		 * The dst_format will be updated there depending upon the
+		 * DSC status.
+		 */
 		fmt = DSI_PIXEL_FORMAT_RGB101010;
 		break;
 	case 24:
@@ -3417,7 +3417,8 @@ static int dsi_panel_parse_dsc_params(struct dsi_display_mode *mode,
 		goto error;
 	}
 
-	rc = sde_dsc_populate_dsc_private_params(&priv_info->dsc, intf_width);
+	rc = sde_dsc_populate_dsc_private_params(&priv_info->dsc, intf_width,
+			priv_info->widebus_support);
 	if (rc) {
 		DSI_DEBUG("failed populating other dsc params\n");
 		rc = -EINVAL;
@@ -4825,12 +4826,6 @@ int dsi_panel_get_mode(struct dsi_panel *panel,
 	mutex_lock(&panel->panel_lock);
 	utils = &panel->utils;
 
-	mode->priv_info = kzalloc(sizeof(*mode->priv_info), GFP_KERNEL);
-	if (!mode->priv_info) {
-		rc = -ENOMEM;
-		goto done;
-	}
-
 	prv_info = mode->priv_info;
 
 	timings_np = utils->get_child_by_name(utils->data,
@@ -4948,12 +4943,8 @@ int dsi_panel_get_mode(struct dsi_panel *panel,
 		}
 #endif /* OPLUS_FEATURE_DISPLAY_ONSCREENFINGERPRINT */
 	}
-	goto done;
 
 parse_fail:
-	kfree(mode->priv_info);
-	mode->priv_info = NULL;
-done:
 	utils->data = utils_data;
 	mutex_unlock(&panel->panel_lock);
 	return rc;
@@ -5620,6 +5611,7 @@ int dsi_panel_enable(struct dsi_panel *panel)
 	if (!strcmp(panel->name, "AA551 P 3 A0004 dsc cmd mode panel"))
 		oplus_display_panel_gamma_update();
 #endif /* OPLUS_FEATURE_DISPLAY */
+
 	rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_ON);
 	if (rc) {
 		DSI_ERR("[%s] failed to send DSI_CMD_SET_ON cmds, rc=%d\n",
@@ -5669,6 +5661,15 @@ int dsi_panel_enable(struct dsi_panel *panel)
 		oplus_panel_set_ffc_mode_unlock(panel);
 	}
 	
+	if (panel->oplus_priv.directional_onepulse_switch
+		&& oplus_panel_pwm_onepulse_is_enabled(panel)) {
+		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_POWER_ON_PWM_SWITCH_ONEPULSE);
+		panel->oplus_pwm_switch_state = PWM_SWITCH_ONEPULSE_STATE;
+		if (rc)
+			DSI_ERR("[%s] failed to send DSI_CMD_POWER_ON_PWM_SWITCH_HIGH cmds rc=%d\n",
+				panel->name, rc);
+	}
+
 	if (panel->oplus_priv.directional_onepulse_switch
 		&& oplus_panel_pwm_onepulse_is_enabled(panel)) {
 		rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_POWER_ON_PWM_SWITCH_ONEPULSE);

@@ -2299,7 +2299,7 @@ retry:
 
 static void _iris_scl_mv_strategy(uint32_t strategy)
 {
-		IRIS_LOGI("%s(), set: %u", __func__, strategy);
+	IRIS_LOGI("%s(), set: %u", __func__, strategy);
 
 	if (strategy < 10) {
 		iris_force_memc_strategy = false;
@@ -3120,6 +3120,19 @@ static void _iris_ioinc_group_filter(uint32_t count, uint32_t *values)
 		iris_ioinc_filter[FILTER_SHARP] = values[2];
 	}
 
+	if (tap == IOINC_TAG5) {
+		IRIS_LOGI("%s(), current filter: [%u, %u], set: [%u, %u]", __func__,
+				iris_ioinc_filter[FILTER_SOFT], iris_ioinc_filter[FILTER_SHARP],
+				values[1], values[2]);
+
+		if (iris_ioinc_filter[FILTER_SOFT] == values[1] &&
+				iris_ioinc_filter[FILTER_SHARP] == values[2])
+			return;
+
+		iris_ioinc_filter[FILTER_SOFT] = values[1];
+		iris_ioinc_filter[FILTER_SHARP] = values[2];
+	}
+
 	/* soft filter */
 	level = 0x00 + values[1]; /* hs_y */
 	iris_init_update_ipopt_t(ip_soft, level, level, 1);
@@ -3669,6 +3682,7 @@ int iris_dbgfs_scl_init(struct dsi_display *display)
 
 	return 0;
 }
+
 
 static void srcnn_replace_model(void)
 {
